@@ -2,6 +2,7 @@ from ReaderFactory import ReaderFactory
 #from ResumeReader import ResumeReader
 from os import listdir
 from os.path import isfile, join
+from textToFeatureConverter import textToFeatureConverter
 
 dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx"
 
@@ -24,6 +25,9 @@ read_All_CV(dir_cvs,file_list)
 text_list=[]
 for path in file_list:
     parser = ReaderFactory.createReader(path)
-    text_list.append( parser.readResume(path))
+    text_list.append(parser.readResume(path))
+    
+featureConverter = textToFeatureConverter()
+featureConverter.getFeaturesFromText(file_list, text_list)
 
 

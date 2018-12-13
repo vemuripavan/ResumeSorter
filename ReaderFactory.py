@@ -1,4 +1,8 @@
 from docxReader import docxReader
+from pdfReader import pdfReader
+from docReader import docReader
+from rtfReader import rtfReader
+from txtReader import txtReader
 import os
 
 class ReaderFactory:
