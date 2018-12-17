@@ -3,6 +3,7 @@ from ResumeReader import ResumeReader
 from win32com.client import Dispatch
 import os
 
+
 class docReader(ResumeReader):
     #Method which will parse the docx file and return text
     def readResume(self,file):
