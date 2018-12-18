@@ -1,8 +1,8 @@
-from docxReader import docxReader
-from pdfReader import pdfReader
-from docReader import docReader
-from rtfReader import rtfReader
-from txtReader import txtReader
+from .docxreader import DocxReader
+from .pdfreader import PDFReader
+from .docreader import DocReader
+from .rtfreader import RTFReader
+from .txtreader import TxtReader
 import os
 
 class ReaderFactory:
@@ -11,12 +11,12 @@ class ReaderFactory:
         name, ext = os.path.splitext(file)
         #Todo we need take care of uper/lowe case also
         if ext =='.docx':
-            return docxReader()
+            return DocxReader()
         elif ext =='.doc':
-            return docReader()
+            return DocReader()
         elif ext =='.pdf':
-            return pdfReader()
+            return PDFReader()
         elif ext =='.rtf':
-            return rtfReader()
+            return RTFReader()
         elif ext =='.text' or ext =='.txt':
-            return txtReader()
+            return TxtReader()

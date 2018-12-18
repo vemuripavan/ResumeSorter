@@ -1,8 +1,8 @@
-from ResumeReader import ResumeReader
+from .resumereader import ResumeReader
 from docx import Document
 import xml.dom.minidom
 
-class docxReader(ResumeReader):
+class DocxReader(ResumeReader):
     #Method which will parse the docx file and return text
     def readResume(self,file):
         document = Document(file)
