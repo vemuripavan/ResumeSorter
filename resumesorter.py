@@ -2,7 +2,7 @@ from reader.readerfactory import ReaderFactory
 #from ReaderFactory import ReaderFactory
 from os import listdir
 from os.path import isfile, join
-from textToFeatureConverter import textToFeatureConverter
+from texttofeatureconverter import textToFeatureConverter
 
 dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx"
 
