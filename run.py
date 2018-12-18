@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, flash, make_respons
 import pandas as pd
 import numpy as np
 from resumesorter import ResumeSorter
+import jdparser 
 
 app = Flask(__name__)
 
@@ -10,12 +11,14 @@ def start():
 	return render_template("index.html")
 
 
+#test = jdparser.parsejd("D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\JD.xlsx")
+
 @app.route("/upload", methods=['POST'])
 def upload_file():
-    print("Sample for upload:")
     if request.method=='POST':
         resumedir = request.form['resumedir']
-        print(resumedir)
+        jdfile = request.files['JD']
+        jddata=jdparser.parsejd(jdfile)
         """resumelist = []
         if type(resumes) is list:
             resumelist = resumes
@@ -30,7 +33,7 @@ def upload_file():
         file_list = rs.getfiles(resumedir)
         text_dic = rs.extracttext(file_list)
         df = pd.DataFrame.from_dict(data=text_dic,orient='index')
-        return render_template("result.html", data=df)
+        return render_template("result.html", data=df, jddata=jddata)
         #return render_template("result.html")
         
 
