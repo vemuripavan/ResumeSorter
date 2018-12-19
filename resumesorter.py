@@ -1,10 +1,8 @@
 from reader.readerfactory import ReaderFactory
-#from ReaderFactory import ReaderFactory
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, basename
 from texttofeatureconverter import textToFeatureConverter
-
-dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx"
+import pandas as pd
 
 
 class ResumeSorter():
@@ -42,14 +40,29 @@ class ResumeSorter():
             parser = ReaderFactory.createReader(path)
             filedic[path] =parser.readResume(path)
         return filedic
+    
+    # Extract the featurs in dataframe object
+    def extractfeatures(self,filedic):
+        feature_df= pd.DataFrame(columns=('Resume', 'Email', 'Phone', 'Exp' ,'Resume_text'))
+        for key,value in filedic.items():
+            textconverter = textToFeatureConverter()
+            email, phn, exp  = textconverter.getFeaturesFromText(value)
+            feature_df= feature_df.append({'Resume':key, 'Email':email, 'Phone': phn,'Exp':exp,'Resume_text':value},ignore_index=True)
+        return feature_df
         
     
-"""rs = ResumeSorter()
+"""
+rs = ResumeSorter()
 dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx\Abhishek Kumar Singh_5.10_HCL_Azure_Delhi_N.docx"
-file = open(dir_cvs)
 resumelist = []
-resumelist.append(file)
+resumelist.append(dir_cvs)
 text_dic = rs.extracttext(resumelist)
+text = text_dic[dir_cvs]
+textconverter = textToFeatureConverter()
+email, phn, exp  = textconverter.getFeaturesFromText(text)
+feature_df= pd.DataFrame(columns=('Resume', 'Email', 'Phone' ,'Resume_text'))
+feature_df= feature_df.append({'Resume':dir_cvs, 'Email':email, 'Phone': phn,'Resume_text':text},ignore_index=True)
+
 """
 
 #featureConverter = textToFeatureConverter()

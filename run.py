@@ -32,7 +32,7 @@ def upload_file():
         #dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx"
         file_list = rs.getfiles(resumedir)
         text_dic = rs.extracttext(file_list)
-        df = pd.DataFrame.from_dict(data=text_dic,orient='index')
+        df = rs.extractfeatures(text_dic)
         return render_template("result.html", data=df, jddata=jddata)
         #return render_template("result.html")
         

@@ -1,18 +1,51 @@
+import nltk, re
 class textToFeatureConverter:
+    
     information=[]
     inputString = ''
     tokens = []
     lines = []
     sentences = []
     
-    def getFeaturesFromText(self, file_list, text_list):
-        for i in range(file_list.length): 
-            info = {}
-            info['fileName'] = file_list[i]
-            self.tokenize(text_list[i])
-            self.getEmail(text_list[i], info)
-            self.getPhone(text_list[i], info)
-        
+    def getFeaturesFromText(self, text):
+        self.preprocess(text)
+        self.tokenize(text)
+        return self.getEmail(text), self.getPhone(text), self.getExperience(text)
+            
+    def preprocess(self, document):
+        '''
+        Information Extraction: Preprocess a document with the necessary POS tagging.
+        Returns three lists, one with tokens, one with POS tagged lines, one with POS tagged sentences.
+        Modules required: nltk
+        '''
+        try:
+            # Try to get rid of special characters
+            try:
+                document = document.decode('ascii', 'ignore')
+            except:
+                document = document.encode('ascii', 'ignore')
+            # Newlines are one element of structure in the data
+            # Helps limit the context and breaks up the data as is intended in resumes - i.e., into points
+            lines = [el.strip() for el in document.split("\n") if len(el) > 0]  # Splitting on the basis of newlines 
+            lines = [nltk.word_tokenize(el) for el in lines]    # Tokenize the individual lines
+            lines = [nltk.pos_tag(el) for el in lines]  # Tag them
+            # Below approach is slightly different because it splits sentences not just on the basis of newlines, but also full stops 
+            # - (barring abbreviations etc.)
+            # But it fails miserably at predicting names, so currently using it only for tokenization of the whole document
+            sentences = nltk.sent_tokenize(document)    # Split/Tokenize into sentences (List of strings)
+            sentences = [nltk.word_tokenize(sent) for sent in sentences]    # Split/Tokenize sentences into words (List of lists of strings)
+            tokens = sentences
+            sentences = [nltk.pos_tag(sent) for sent in sentences]    # Tag the tokens - list of lists of tuples - each tuple is (<word>, <tag>)
+            # Next 4 lines convert tokens from a list of list of strings to a list of strings; basically stitches them together
+            dummy = []
+            for el in tokens:
+                dummy += el
+            tokens = dummy
+            # tokens - words extracted from the doc, lines - split only based on newlines (may have more than one sentence)
+            # sentences - split on the basis of rules of grammar
+            return tokens, lines, sentences
+        except Exception as e:
+            print(e)
     
     def tokenize(self, inputString):
         try:
@@ -21,13 +54,8 @@ class textToFeatureConverter:
         except Exception as e:
             print(e)
     
-    def getEmail(self, inputString, infoDict, debug=False): 
-        '''
-        Given an input string, returns possible matches for emails. Uses regular expression based matching.
-        Needs an input string, a dictionary where values are being stored, and an optional parameter for debugging.
-        Modules required: clock from time, code.
-        '''
-    
+    #Given an input string, returns possible matches for emails.
+    def getEmail(self, inputString): 
         email = None
         try:
             pattern = re.compile(r'\S*@\S*')
@@ -35,21 +63,10 @@ class textToFeatureConverter:
             email = matches
         except Exception as e:
             print(e)
-    
-        infoDict['email'] = email
-    
-        if debug:
-            print("\n", pprint(infoDict), "\n")
-            code.interact(local=locals())
         return email
     
-    def getPhone(self, inputString, infoDict, debug=False):
-        '''
-        Given an input string, returns possible matches for phone numbers. Uses regular expression based matching.
-        Needs an input string, a dictionary where values are being stored, and an optional parameter for debugging.
-        Modules required: clock from time, code.
-        '''
-    
+    #Given an input string, returns possible matches for phone numbers.
+    def getPhone(self, inputString):
         number = None
         try:
             pattern = re.compile(r'([+(]?\d+[)\-]?[ \t\r\f\v]*[(]?\d{2,}[()\-]?[ \t\r\f\v]*\d{2,}[()\-]?[ \t\r\f\v]*\d*[ \t\r\f\v]*\d*[ \t\r\f\v]*)')
@@ -89,10 +106,21 @@ class textToFeatureConverter:
             number = match
         except:
             pass
-    
-        infoDict['phone'] = number
-    
-        if debug:
-            print("\n", pprint(infoDict), "\n")
-            code.interact(local=locals())
         return number
+    
+    def getExperience(self,inputString):
+        experience=[]
+        try:
+            for sentence in self.lines:#find the index of the sentence where the degree is find and then analyse that sentence
+                    sen=" ".join([words[0].lower() for words in sentence]) #string of words in sentence
+                    if re.search('experience',sen):
+                        sen_tokenised= nltk.word_tokenize(sen)
+                        tagged = nltk.pos_tag(sen_tokenised)
+                        entities = nltk.chunk.ne_chunk(tagged)
+                        for subtree in entities.subtrees():
+                            for leaf in subtree.leaves():
+                                if leaf[1]=='CD':
+                                    experience=leaf[0]
+        except Exception as e:
+            print (e)
+        return experience
