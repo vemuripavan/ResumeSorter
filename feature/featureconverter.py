@@ -1,5 +1,5 @@
 import nltk, re
-class textToFeatureConverter:
+class FeatureConverter:
     
     information=[]
     inputString = ''

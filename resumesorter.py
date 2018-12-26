@@ -1,67 +1,58 @@
-from reader.readerfactory import ReaderFactory
-from os import listdir
-from os.path import isfile, join, basename
-from texttofeatureconverter import textToFeatureConverter
+from feature import jdparser 
+from feature import resumeparser 
+from feature import textutil
+from comparator import textcomparator
+
 import pandas as pd
 
 
 class ResumeSorter():
 
-    """# Read all files from the given directory and it will check sub-directory also
-    def getfiles(self,resumedir):
-        file_list = []
-        if isfile(resumedir):
-                #print(f)
-                file_list.append(resumedir)
-        else:
-            for f in listdir(resumedir):
-                if isfile(f):
-                    #print(f)
-                    file_list.append(f)
-                else:
-                    file_list.append(self.getfiles(resumedir+'\\'+f))
-        return file_list"""
-    
-    # Read all files from the given directory
-    def getfiles(self,resumedir):
-        file_list = []
-        if isfile(resumedir):
-                file_list.append(resumedir)
-        else:
-            for f in listdir(resumedir):
-                if isfile(join(resumedir,f)):
-                    file_list.append(join(resumedir,f))
-        return file_list
-    
-    # Extract the text from list of files and retun a dictionary
-    def extracttext(self,file_list):
-        filedic={}
-        for path in file_list:
-            parser = ReaderFactory.createReader(path)
-            filedic[path] =parser.readResume(path)
-        return filedic
-    
-    # Extract the featurs in dataframe object
-    def extractfeatures(self,filedic):
-        feature_df= pd.DataFrame(columns=('Resume', 'Email', 'Phone', 'Exp' ,'Resume_text'))
-        for key,value in filedic.items():
-            textconverter = textToFeatureConverter()
-            email, phn, exp  = textconverter.getFeaturesFromText(value)
-            feature_df= feature_df.append({'Resume':key, 'Email':email, 'Phone': phn,'Exp':exp,'Resume_text':value},ignore_index=True)
-        return feature_df
+    ## Create three variables for weightage to 
+    """
+    Experience: 60%
+    Skills : 25%
+    Job Description: 15%
+
+    """
+
+
+    def sortResumes(self, jdfile,resumedir):
+        #resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\Business Analyst"
+        #jdfile = "D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\JD_One.xlsx"
+
+        jdf=jdparser.parsejd(jdfile)
+        file_list = resumeparser.getfiles(resumedir)
+        text_dic = resumeparser.extracttext(file_list)
+        rdf = resumeparser.extractfeatures(text_dic)
+        rdf =textutil.texttokenize('Resume_text','text_tok',rdf)
+        score_df = pd.DataFrame()
+        score_df["ResumeName"] = rdf["ResumeName"]
+        textcomparator.fetchSimilarity(score_df, rdf, jdf)
+        return score_df
+        
         
     
+
+
 """
-rs = ResumeSorter()
-dir_cvs="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx\Abhishek Kumar Singh_5.10_HCL_Azure_Delhi_N.docx"
-resumelist = []
-resumelist.append(dir_cvs)
-text_dic = rs.extracttext(resumelist)
-text = text_dic[dir_cvs]
-textconverter = textToFeatureConverter()
-email, phn, exp  = textconverter.getFeaturesFromText(text)
-feature_df= pd.DataFrame(columns=('Resume', 'Email', 'Phone' ,'Resume_text'))
-feature_df= feature_df.append({'Resume':dir_cvs, 'Email':email, 'Phone': phn,'Resume_text':text},ignore_index=True)
+resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\Business Analyst"
+jdfile = "D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\JD_One.xlsx"
+
+jdf=jdparser.parsejd(jdfile)
+file_list = resumeparser.getfiles(resumedir)
+text_dic = resumeparser.extracttext(file_list)
+
+
+
+rdf = resumeparser.extractfeatures(text_dic)
+
+rdf =textutil.texttokenize('Resume_text','text_tok',rdf)
+    
+score_df = pd.DataFrame()
+score_df["ResumeName"] = rdf["ResumeName"]
+textcomparator.fetchSimilarity(score_df, rdf, jdf)
+
 
 """
 

@@ -5,20 +5,15 @@ Created on Mon Dec 17 12:40:05 2018
 @author: surya.k
 """
 
-
 import pandas as pd
+from feature import textutil
 
-
-
-
+# Read JD file (having only one profile) and provide Exp, Skils_Tech, job_desc
 def parsejd(jdfile):
     jddata = pd.read_excel(jdfile)
     jddata.info()
-    jd_info = jddata[["Job Title","Yrs Of Exp ","Qualification ","Primary Skill"]]
+    jd_info = jddata[['Yrs Of Exp ','Primary Skill','High Level Job Description']]
     primarySkillSeries = jd_info["Primary Skill"]
-    
-    
-    
     
     x = primarySkillSeries.str.split("--",expand=True)
     y = x[0]
@@ -41,7 +36,11 @@ def parsejd(jdfile):
             updated_sk_list.append(j)
             
     jd_info.drop(['Primary Skill'], inplace = True, axis = 1)
-    jd_info.insert(3,'Required Skill',updated_sk_list)
+    jd_info['Required Skill'] = updated_sk_list
+    
+    jd_info =textutil.texttokenize('High Level Job Description','text_tok',jd_info)
+    
+    jd_info.rename(columns={'Yrs Of Exp ': 'Exp', 'Required Skill': 'Skills_Tech',
+                       'High Level Job Description':'Job_Desc'}, inplace=True)
     
     return jd_info
-
