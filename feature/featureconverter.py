@@ -1,4 +1,6 @@
 import nltk, re
+from word2number import w2n
+
 class FeatureConverter:
     
     information=[]
@@ -7,7 +9,12 @@ class FeatureConverter:
     lines = []
     sentences = []
     
-    def getFeaturesFromText(self, text):
+    def getFeaturesFromText(self, text): 
+        nltk.download('punkt')
+        nltk.download('averaged_perceptron_tagger')
+        nltk.download('maxent_ne_chunker')
+        nltk.download('words')
+       
         self.preprocess(text)
         self.tokenize(text)
         return self.getEmail(text), self.getPhone(text), self.getExperience(text)
@@ -23,10 +30,11 @@ class FeatureConverter:
             try:
                 document = document.decode('ascii', 'ignore')
             except:
-                document = document.encode('ascii', 'ignore')
+                #document = document.encode('ascii', 'ignore')
+                print("No Encoding")
             # Newlines are one element of structure in the data
             # Helps limit the context and breaks up the data as is intended in resumes - i.e., into points
-            lines = [el.strip() for el in document.split("\n") if len(el) > 0]  # Splitting on the basis of newlines 
+            lines = [el.strip() for el in re.split("\r|\n",document) if len(el) > 0]  # Splitting on the basis of newlines 
             lines = [nltk.word_tokenize(el) for el in lines]    # Tokenize the individual lines
             lines = [nltk.pos_tag(el) for el in lines]  # Tag them
             # Below approach is slightly different because it splits sentences not just on the basis of newlines, but also full stops 
@@ -120,7 +128,7 @@ class FeatureConverter:
                         for subtree in entities.subtrees():
                             for leaf in subtree.leaves():
                                 if leaf[1]=='CD':
-                                    experience=leaf[0]
+                                    experience= w2n.word_to_num(leaf[0].strip('+'))
         except Exception as e:
             print (e)
         return experience

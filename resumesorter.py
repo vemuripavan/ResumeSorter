@@ -28,6 +28,7 @@ class ResumeSorter():
         rdf =textutil.texttokenize('Resume_text','text_tok',rdf)
         score_df = pd.DataFrame()
         score_df["ResumeName"] = rdf["ResumeName"]
+        score_df["ResmueEXP"] = rdf["Exp"]
         textcomparator.fetchSimilarity(score_df, rdf, jdf)
         return score_df
         
