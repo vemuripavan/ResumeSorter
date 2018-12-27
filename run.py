@@ -22,7 +22,7 @@ def upload_file():
         
         rs = ResumeSorter()
         score_df = rs.sortResumes(jdfile,resumedir)
-        score_df.sort_values(by='text_score',ascending=False)
+        #score_df.sort_values(by='text_score',ascending=False)
         return render_template("result.html", data=score_df, jddata=jddata)
         #return render_template("result.html")
         

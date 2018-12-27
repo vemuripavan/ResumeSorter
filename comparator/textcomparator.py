@@ -9,5 +9,5 @@ def fetchSimilarity(score_df, rdf, jdf):
     #print(res_csc.shape)
     #print(jd_csc.shape)
     cosine_sim, manhattan_dis, eucledian_dis = textutil.get_similarity_values(res_csc, jd_csc)
-    score_df['text_score'] = cosine_sim
+    score_df['Text_Score'] = cosine_sim
 

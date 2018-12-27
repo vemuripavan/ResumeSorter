@@ -12,35 +12,48 @@ from feature import textutil
 def parsejd(jdfile):
     jddata = pd.read_excel(jdfile)
     jddata.info()
-    jd_info = jddata[['Yrs Of Exp ','Primary Skill','High Level Job Description']]
-    primarySkillSeries = jd_info["Primary Skill"]
+    jd_info = jddata[['Yrs Of Exp ','Primary Skill','High Level Job Description','Technology']]
     
-    x = primarySkillSeries.str.split("--",expand=True)
-    y = x[0]
-    skill_list = y.values.tolist()
-    
-    
-    updated_sk_list = []
-    for i in skill_list:
-        if (',' in i ):
-            j = i.split(',')
-            updated_sk_list.append(j)
-        elif('&' in i):
-            j = i.split('&')
-            updated_sk_list.append(j)
-        elif('-' in i):
-            j = i.split('-')
-            updated_sk_list.append(j)
-        else:
-            j = [i]
-            updated_sk_list.append(j)
-            
-    jd_info.drop(['Primary Skill'], inplace = True, axis = 1)
-    jd_info['Required Skill'] = updated_sk_list
-    
+    skillAndTech= jd_info.iloc[0]['Primary Skill'] + ", " +  jd_info.iloc[0]['Technology']
+    skillAndTechValues = skillAndTech.lower().split("--")
+    jd_info['Skills_Tech'] = prepareSkillTechList(skillAndTechValues)
+        
     jd_info =textutil.texttokenize('High Level Job Description','text_tok',jd_info)
-    
-    jd_info.rename(columns={'Yrs Of Exp ': 'Exp', 'Required Skill': 'Skills_Tech',
+    jd_info.rename(columns={'Yrs Of Exp ': 'Exp',
                        'High Level Job Description':'Job_Desc'}, inplace=True)
-    
+    jd_info.drop(['Primary Skill','Technology'], inplace = True, axis = 1)
     return jd_info
+
+def prepareSkillTechList(skilltechvalueslist):
+    skilltechvalues = []
+    z = ['None' if v is None else v for v in skilltechvalueslist]
+    z1 = list(set(z))
+    if 'None' in z1:
+        z1.remove('None')
+    j = ' '.join(z1)
+    if "expert" in j:
+        j = j.replace("expert",' ')
+    if "master" in j:
+        j = j.replace("master",' ')
+    if "," in j:
+        j = j.replace(",",' ')
+    if "&" in j:
+        j = j.replace("&",' ')        
+    j = j.split(" ")
+    j1 = list(set(j))
+    j1.remove("")
+    skilltechvalues.append(j1)
+        
+    return skilltechvalues
+
+
+# Code for Unit Testing
+"""jdfile = "D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\JD_BA.xlsx"
+jddata = pd.read_excel(jdfile)
+jddata.info()
+jd_info = jddata[['Yrs Of Exp ','Primary Skill','High Level Job Description','Technology']]
+
+skillAndTech= jd_info.iloc[0]['Primary Skill'] + ", " +  jd_info.iloc[0]['Technology']
+skillAndTechValues = skillAndTech.lower().split("--")
+skillAndTechValuesLIST = prepareSkillTechList(skillAndTechValues)
+"""
