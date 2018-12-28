@@ -8,8 +8,9 @@ import os
 class ReaderFactory:
     @staticmethod
     def createReader(file):
+        #TODO: What if file extn is not in the given list
         name, ext = os.path.splitext(file)
-        #Todo we need take care of uper/lowe case also
+        ext = ext.lower()
         if ext =='.docx':
             return DocxReader()
         elif ext =='.doc':

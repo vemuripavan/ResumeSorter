@@ -10,10 +10,11 @@ class FeatureConverter:
     sentences = []
     
     def getFeaturesFromText(self, text): 
-        nltk.download('punkt')
+        #TODO: Download below package only once
+        """nltk.download('punkt')
         nltk.download('averaged_perceptron_tagger')
         nltk.download('maxent_ne_chunker')
-        nltk.download('words')
+        nltk.download('words')"""
        
         self.preprocess(text)
         self.tokenize(text)
@@ -30,7 +31,7 @@ class FeatureConverter:
             try:
                 document = document.decode('ascii', 'ignore')
             except:
-                #document = document.encode('ascii', 'ignore')
+                #TODO: Try to use logging at info level
                 print("No Encoding")
             # Newlines are one element of structure in the data
             # Helps limit the context and breaks up the data as is intended in resumes - i.e., into points

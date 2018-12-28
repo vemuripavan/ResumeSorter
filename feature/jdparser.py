@@ -8,6 +8,7 @@ Created on Mon Dec 17 12:40:05 2018
 import pandas as pd
 from feature import textutil
 
+
 # Read JD file (having only one profile) and provide Exp, Skils_Tech, job_desc
 def parsejd(jdfile):
     jddata = pd.read_excel(jdfile)
@@ -21,6 +22,8 @@ def parsejd(jdfile):
     jd_info =textutil.texttokenize('High Level Job Description','text_tok',jd_info)
     jd_info.rename(columns={'Yrs Of Exp ': 'Exp',
                        'High Level Job Description':'Job_Desc'}, inplace=True)
+    
+    jd_info['Exp'][0] = clearExp(jd_info['Exp'][0])
     jd_info.drop(['Primary Skill','Technology'], inplace = True, axis = 1)
     return jd_info
 
@@ -45,6 +48,19 @@ def prepareSkillTechList(skilltechvalueslist):
     skilltechvalues.append(j1)
         
     return skilltechvalues
+
+def clearExp(jd_exp):
+    if isinstance(jd_exp,str):
+        jd_exp = jd_exp.lower()
+        jd_exp = jd_exp.strip()
+        jd_exp = jd_exp.replace(" ", "")
+        if '-' in jd_exp:
+            jd_exp = [int(x) for x in jd_exp.split("-")]
+        elif 'to' in jd_exp:
+            jd_exp = [int(x) for x in jd_exp.split("to")]
+    return jd_exp
+
+
 
 
 # Code for Unit Testing
