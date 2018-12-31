@@ -12,10 +12,10 @@ class FeatureConverter:
     
     def getFeaturesFromText(self, text): 
         #TODO: Download below package only once
-        """nltk.download('punkt')
-        nltk.download('averaged_perceptron_tagger')
-        nltk.download('maxent_ne_chunker')
-        nltk.download('words')"""
+        #nltk.download('punkt')
+        #nltk.download('averaged_perceptron_tagger')
+        #nltk.download('maxent_ne_chunker')
+        #nltk.download('words')
        
         self.preprocess(text)
         self.tokenize(text)
@@ -120,7 +120,8 @@ class FeatureConverter:
     
     def getExperience(self,inputString):
         expMatchStrings = ['experience', 'exp ', 'exp.', 'exp:']
-        yearStrings = ['yrs', 'years ', 'yr']
+        #TODO need to calculate months also
+        yearStrings = ['yrs', 'years', 'yr']
         experience = []
         experience_df=pd.DataFrame(columns=('Type', 'Years', 'Months'))
         try:
@@ -145,13 +146,28 @@ class FeatureConverter:
                                     
                                     for match in (expMatchStrings+yearStrings):
                                         expStr = expStr.replace(match,"")
+
                                         
+                                    #If expStr contains only digit
                                     try:
                                         years = float(expStr)
                                     except:
-                                        years = w2n.word_to_num(expStr)
+                                        try:
+                                            # If expStr is string which can be converted into number
+                                            years = w2n.word_to_num(expStr)
+                                        except:
+                                            # try to remove all non-numeric characters from string except dot
+                                            non_decimal = re.compile(r'[^\d.]+')
+                                            expStr=non_decimal.sub("", expStr)
+                                            try:
+                                                years = float(expStr)
+                                            except Exception as e:
+                                                years = 0
+                                                print(e)
+                                                
+                                            
                                         
-                                    if years < 30:
+                                    if years>0 and years < 30:
                                         experience_df = experience_df.append({'Type': expType, 'Years': years, 'Months': 0},ignore_index=True)                                    
             
             if not experience_df.empty:
@@ -162,3 +178,90 @@ class FeatureConverter:
             print (e)
             
         return experience
+
+
+# Code for Unit Testing
+"""
+from feature import resumeparser 
+from os.path import isfile, join, basename
+import pandas as pd
+from feature.featureconverter import FeatureConverter
+
+resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx\\test"
+
+file_list = resumeparser.getfiles(resumedir)
+text_dic = resumeparser.extracttext(file_list)
+
+rdf = resumeparser.extractfeatures(text_dic)
+
+
+
+key = "D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\Sharepoint\Adusumalli V.Ramanamma_3_iGrid_hyd_SP_N.docx"
+value = text_dic[key]
+feature_df= pd.DataFrame(columns=('ResumeName', 'Email', 'Phone', 'Exp' ,'Resume_text'))
+
+featureConverter = FeatureConverter()
+email, phn, exp  = featureConverter.getFeaturesFromText(value)
+feature_df= feature_df.append({'ResumeName':basename(key), 'Email':email, 'Phone': phn,'Exp':exp,'Resume_text':value},ignore_index=True)
+
+
+
+expMatchStrings = ['experience', 'exp ', 'exp.', 'exp:']
+yearStrings = ['yrs', 'years', 'yr']
+experience = []
+experience_df=pd.DataFrame(columns=('Type', 'Years', 'Months'))
+
+#sen="Software Engineer with around 3+years of experience in Four IT industry with expertise on Moss 2007 and SharePoint 2010 technologies."
+sen = "A result-oriented professional with over ​5.7 years experience in application development & enhancement, service delivery."
+
+exp_flag = any(re.search(x,sen) for x in expMatchStrings) and any(re.search(x,sen) for x in yearStrings)
+
+
+sen_tokenised= nltk.word_tokenize(sen)
+tagged = nltk.pos_tag(sen_tokenised)
+entities = nltk.chunk.ne_chunk(tagged)
+
+exps = []
+for subtree in entities.subtrees():
+    for leaf in subtree.leaves():
+        if leaf[1]=='CD':
+            if re.search('total',sen):
+                expType = 1
+            else: 
+                if re.search('overall',sen):
+                    expType = 2
+                else:
+                    expType = 3
+                    
+            expStr = leaf[0].strip('+').strip('\x07')        
+            for match in (expMatchStrings+yearStrings):
+                expStr = expStr.replace(match,"")
+            #expStr = expStr.strip('+')
+            
+            
+            #If expStr contains only digit
+            if expStr.isdigit():
+                years = float(expStr)
+            else:
+                try:
+                    # If expStr is string which can be converted into number
+                    years = w2n.word_to_num(expStr)
+                except Exception as e:
+                    # try to remove all non-numeric characters from string
+                    non_decimal = re.compile(r'[^\d.]+')
+                    expStr=non_decimal.sub("", expStr)
+                    years = float(expStr)
+            
+            exps.append(expStr)
+            
+         
+            
+            
+            if years < 30:
+                experience_df = experience_df.append({'Type': expType, 'Years': years, 'Months': 0},ignore_index=True)                                    
+
+if not experience_df.empty:
+    experience_df = experience_df.sort_values(['Type', 'Years'], ascending=[True, False])
+    experience = str(experience_df['Years'].iloc[0])
+
+"""
