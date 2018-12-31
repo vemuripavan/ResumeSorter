@@ -32,8 +32,8 @@ class FeatureConverter:
             try:
                 document = document.decode('ascii', 'ignore')
             except:
-                #TODO: Try to use logging at info level
-                print("No Encoding")
+                #Pass as document not encoded
+                pass
             # Newlines are one element of structure in the data
             # Helps limit the context and breaks up the data as is intended in resumes - i.e., into points
             lines = [el.strip() for el in re.split("\r|\n",document) if len(el) > 0]  # Splitting on the basis of newlines 
@@ -119,35 +119,36 @@ class FeatureConverter:
         return number
     
     def getExperience(self,inputString):
-        expMatchStrings = ['experience', 'exp ', 'exp.', 'exp:']
+        expMatchStrings = ['experience', 'exp ', 'exp.', 'exp:','experience:']
         #TODO need to calculate months also
         yearStrings = ['yrs', 'years', 'yr']
         experience = []
-        experience_df=pd.DataFrame(columns=('Type', 'Years', 'Months'))
+        experience_df=pd.DataFrame(columns=('Type', 'Years', 'Months', 'Location'))
         try:
+            pos = 0
             for sentence in self.lines:#find the index of the sentence where the degree is find and then analyse that sentence
-                    sen=" ".join([words[0].lower() for words in sentence]) #string of words in sentence
-                    if any(re.search(x,sen) for x in expMatchStrings) and any(re.search(x,sen) for x in yearStrings):
-                        sen_tokenised= nltk.word_tokenize(sen)
-                        tagged = nltk.pos_tag(sen_tokenised)
-                        entities = nltk.chunk.ne_chunk(tagged)
-                        for subtree in entities.subtrees():
-                            for leaf in subtree.leaves():
-                                if leaf[1]=='CD':
-                                    if re.search('total',sen):
-                                        expType = 1
-                                    else: 
-                                        if re.search('overall',sen):
-                                            expType = 2
-                                        else:
-                                            expType = 3
-                                            
-                                    expStr = leaf[0].strip('+').strip('\x07')
-                                    
-                                    for match in (expMatchStrings+yearStrings):
-                                        expStr = expStr.replace(match,"")
-
+                pos = pos+1
+                sen=" ".join([words[0].lower() for words in sentence]) #string of words in sentence
+                if any(re.search(x,sen) for x in expMatchStrings) and any(re.search(x,sen) for x in yearStrings):
+                    sen_tokenised= nltk.word_tokenize(sen)
+                    tagged = nltk.pos_tag(sen_tokenised)
+                    entities = nltk.chunk.ne_chunk(tagged)
+                    for subtree in entities.subtrees():
+                        for leaf in subtree.leaves():
+                            if leaf[1]=='CD':
+                                if re.search('total',sen):
+                                    expType = 1
+                                else: 
+                                    if re.search('overall',sen):
+                                        expType = 2
+                                    else:
+                                        expType = 3
                                         
+                                expStr = leaf[0].strip('+').strip('\x07')
+                                
+                                for match in (expMatchStrings+yearStrings):
+                                    expStr = expStr.replace(match,"")
+                                    
                                     #If expStr contains only digit
                                     try:
                                         years = float(expStr)
@@ -164,15 +165,14 @@ class FeatureConverter:
                                             except Exception as e:
                                                 years = 0
                                                 print(e)
-                                                
-                                            
-                                        
+                            
                                     if years>0 and years < 30:
-                                        experience_df = experience_df.append({'Type': expType, 'Years': years, 'Months': 0},ignore_index=True)                                    
-            
+                                        experience_df = experience_df.append({'Type': expType, 'Years': years, 'Months': 0, 'Location': pos},ignore_index=True)                                    
+                                                                                
             if not experience_df.empty:
+                #experience_df = experience_df.sort_values(['Type', 'Years','Location'], ascending=[True, False, True])
                 experience_df = experience_df.sort_values(['Type', 'Years'], ascending=[True, False])
-                experience = str(experience_df['Years'].iloc[0])
+                experience = float(experience_df['Years'].iloc[0])
                         
         except Exception as e:
             print (e)
@@ -182,12 +182,13 @@ class FeatureConverter:
 
 # Code for Unit Testing
 """
+
 from feature import resumeparser 
 from os.path import isfile, join, basename
 import pandas as pd
-from feature.featureconverter import FeatureConverter
+#from feature.featureconverter import FeatureConverter
 
-resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\docx\\test"
+resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\Sharepoint"
 
 file_list = resumeparser.getfiles(resumedir)
 text_dic = resumeparser.extracttext(file_list)
@@ -212,7 +213,7 @@ experience = []
 experience_df=pd.DataFrame(columns=('Type', 'Years', 'Months'))
 
 #sen="Software Engineer with around 3+years of experience in Four IT industry with expertise on Moss 2007 and SharePoint 2010 technologies."
-sen = "A result-oriented professional with over ​5.7 years experience in application development & enhancement, service delivery."
+sen = "A result-oriented professional with over ?5.7 years experience in application development & enhancement, service delivery."
 
 exp_flag = any(re.search(x,sen) for x in expMatchStrings) and any(re.search(x,sen) for x in yearStrings)
 
@@ -263,5 +264,4 @@ for subtree in entities.subtrees():
 if not experience_df.empty:
     experience_df = experience_df.sort_values(['Type', 'Years'], ascending=[True, False])
     experience = str(experience_df['Years'].iloc[0])
-
 """

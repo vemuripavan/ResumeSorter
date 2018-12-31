@@ -13,13 +13,13 @@ def compareExp(score_df, rdf, jdf):
     exp_score = []
     if isinstance(jdexp,np.int64):
         for rsexp in r_exp:
-            if isinstance(rsexp,int):
+            if isinstance(rsexp,float):
                 exp_score.append(compare_exp(jdexp,rsexp))
             else:
                 exp_score.append(0)
     elif isinstance(jdexp,list):
         for rsexp in r_exp:
-            if isinstance(rsexp,int):
+            if isinstance(rsexp,float):
                 
                 exp_score.append(compare_exp_range(jdexp,rsexp))
             else:
