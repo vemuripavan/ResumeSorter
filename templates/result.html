@@ -26,15 +26,16 @@ function moveBack(){
 	<div class="container">
     	<div class="form-group" style="float:right;">
         	<button type="button" onclick="moveBack();" class="btn btn-primary">Back</button>
-        </div>
-    	<div class="form-group">
-    			<h2>Resume and their Details</h2>
-    			{{ data.to_html(classes="table table-striped") | safe}}
-    	</div>
+      </div>
     	
     	<div class="form-group">
     			<h2>Job Description</h2>
     			{{ jddata.to_html(classes="table table-striped") | safe}}
+    	</div>
+    	
+    	<div class="form-group">
+    			<h2>Resume and their Details</h2>
+    			{{ data.to_html(classes="table table-striped") | safe}}
     	</div>
 	</div>
 

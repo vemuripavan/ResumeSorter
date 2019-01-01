@@ -8,13 +8,10 @@ import pandas as pd
 
 class ResumeSorter():
 
-    ## Create three variables for weightage to 
-    """
-    Experience: 60%
-    Skills : 25%
-    Job Description: 15%
-
-    """
+    ## Create three variables for weightage to     
+    ExperienceWeightage = 0.60
+    SkillsWeightage = 0.25
+    JDWeightage = 0.15
 
 
     def sortResumes(self, jdfile,resumedir):
@@ -32,6 +29,9 @@ class ResumeSorter():
         textcomparator.fetchSimilarity(score_df, rdf, jdf)
         skillscomparator.compareSkills(score_df, rdf, jdf)
         expcomparator.compareExp(score_df, rdf, jdf)
+        score_df["TotalScore"]=score_df["Text_Score"]*self.JDWeightage + score_df["SkillTech_Score"]*self.SkillsWeightage + score_df["Exp_Score"]*self.ExperienceWeightage
+        score_df = score_df.sort_values(['TotalScore'], ascending=[False])
+        score_df = score_df.reset_index(drop=True)
         return score_df
         
     
