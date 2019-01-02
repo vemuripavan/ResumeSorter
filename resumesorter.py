@@ -13,7 +13,6 @@ class ResumeSorter():
     SkillsWeightage = 0.25
     JDWeightage = 0.15
 
-
     def sortResumes(self, jdfile,resumedir):
         #resumedir="D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\Resumes\Business Analyst"
         #jdfile = "D:\deep\SPAN\Shikhsa\AI\ML\kaggle\Data Science_Final project\JD_One.xlsx"
@@ -32,6 +31,8 @@ class ResumeSorter():
         score_df["TotalScore"]=score_df["Text_Score"]*self.JDWeightage + score_df["SkillTech_Score"]*self.SkillsWeightage + score_df["Exp_Score"]*self.ExperienceWeightage
         score_df = score_df.sort_values(['TotalScore'], ascending=[False])
         score_df = score_df.reset_index(drop=True)
+        
+        score_df.rename(columns={'Text_Score': 'Text_Score(15%)' , 'SkillTech_Score': 'SkillTech_Score(25%)', 'Exp_Score': 'Exp_Score(60%)'  }, inplace=True)
         return score_df
         
     
